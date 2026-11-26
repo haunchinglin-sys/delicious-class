@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美味的一堂課 - 國小四年級感官寫作訪談室</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#203B54',
+                            sky: '#EBF3FA',
+                            orange: '#F97316',
+                            yellow: '#F59E0B',
+                            amber: '#FEF3C7',
+                            cream: '#FFFDF7',
+                            card: '#FFFFFF',
+                            green: '#10B981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FFFDF7;
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #1E293B;
+        }
+
+        /* 隱藏滾動條但保持滾動 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 按鈕與卡片浮動動畫 */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 脈衝提示 */
+        @keyframes subtle-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .pulse-subtle {
+            animation: subtle-pulse 3s infinite ease-in-out;
+        }
+
+        /* 適合國小列印學習單樣式 */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .print-only {
+                display: block !important;
+            }
+            body {
+                background: white !important;
+                color: black !important;
+                font-size: 12pt;
+            }
+            .print-container {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 10px !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            .print-page-break {
+                page-break-before: always;
+            }
+        }
+
+        .print-only {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-yellow selection:text-brand-navy">
+
+    <!-- 頂部導覽列 Header (非列印區) -->
+    <header class="no-print bg-brand-navy text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="goToStage(1)">
+                <span class="text-3xl">🧑‍🍳</span>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black tracking-wide text-brand-yellow">美味的一堂課</h1>
+                    <p class="text-xs text-blue-200">國小四年級記敘文感官寫作訪談室</p>
+                </div>
+            </div>
+
+            <!-- 右側狀態與功能 -->
+            <div class="flex items-center space-x-3">
+                <div id="selectedDishBadge" class="hidden bg-blue-900/60 text-brand-yellow border border-yellow-500/40 rounded-full px-3 py-1 text-sm font-bold items-center space-x-2">
+                    <span id="badgeIcon">🍙</span>
+                    <span id="badgeName">手作飯糰</span>
+                </div>
+
+                <button id="changeDishBtn" onclick="goToStage(1)" class="hidden bg-amber-500 hover:bg-amber-600 text-brand-navy font-bold text-xs md:text-sm px-3 py-1.5 rounded-lg transition duration-200 shadow">
+                    🔄 更換料理
+                </button>
+
+                <button id="soundToggleBtn" onclick="toggleSound()" class="bg-blue-800 hover:bg-blue-700 text-white p-2 rounded-lg text-sm flex items-center justify-center transition" title="開關音效">
+                    🔊
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 流程進度條 (Stage 2/3 顯示) -->
+    <div id="progressBarContainer" class="no-print bg-brand-sky border-b border-blue-100 py-2 transition-all duration-300">
+        <div class="max-w-3xl mx-auto px-4 flex justify-between items-center text-xs md:text-sm font-bold text-slate-600">
+            <div id="stepDot1" class="flex items-center space-x-1 text-brand-orange">
+                <span class="w-6 h-6 rounded-full bg-brand-orange text-white flex items-center justify-center text-xs">1</span>
+                <span>選單大廳</span>
+            </div>
+            <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+            <div id="stepDot2" class="flex items-center space-x-1 text-slate-400">
+                <span id="stepNum2" class="w-6 h-6 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs">2</span>
+                <span>感官訪談</span>
+            </div>
+            <div class="h-0.5 flex-1 bg-slate-200 mx-2"></div>
+            <div id="stepDot3" class="flex items-center space-x-1 text-slate-400">
+                <span id="stepNum3" class="w-6 h-6 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs">3</span>
+                <span>寫作計畫</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要內容區 Main Content -->
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+
+        <!-- Stage 1: 美食選單大廳 -->
+        <section id="stage1" class="space-y-6">
+            <!-- 導師歡迎卡 -->
+            <div class="bg-gradient-to-r from-brand-navy to-blue-900 rounded-2xl p-6 text-white shadow-xl flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+                <div class="text-6xl md:text-7xl animate-bounce">🐻‍❄️</div>
+                <div class="space-y-2 text-center md:text-left">
+                    <div class="inline-block bg-brand-orange text-white text-xs font-bold px-3 py-1 rounded-full mb-1">
+                        廚神小熊導師的話
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-black text-brand-yellow">小廚神你好！今天上了什麼美味的一堂課？</h2>
+                    <p class="text-blue-100 text-sm md:text-base leading-relaxed">
+                        選一道你今天親手製作或最想分享的美食吧！小熊導師會一步步引導你運用「眼看、鼻聞、嘴嚐、心想」，寫出一篇令人垂涎三尺的高分記敘文喔！
+                    </p>
+                </div>
+            </div>
+
+            <h3 class="text-xl font-bold text-brand-navy flex items-center space-x-2 pt-2">
+                <span>🍽️</span>
+                <span>請選擇今天的美味主角：</span>
+            </h3>
+
+            <!-- 5大美食選單卡片 Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- 卡片 1: 飯糰 -->
+                <div onclick="selectDish('riceball')" class="hover-lift bg-white border-2 border-amber-200 hover:border-brand-orange rounded-2xl p-5 cursor-pointer shadow-sm transition duration-200 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-5xl bg-amber-50 p-3 rounded-2xl">🍙</div>
+                        <div>
+                            <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">傳統手作</span>
+                            <h4 class="text-xl font-black text-slate-800">手作飯糰</h4>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed">白白胖胖的香Q米飯，包裹著酥脆蘿蔔乾、肉鬆與滷蛋，緊緊握壓出滿滿幸福感。</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#圓滾滾</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#熱騰騰米香</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#鹹香QQ</span>
+                    </div>
+                    <button class="w-full bg-brand-navy hover:bg-blue-800 text-white font-bold py-2 rounded-xl text-sm transition">開始寫作訪談 ➔</button>
+                </div>
+
+                <!-- 卡片 2: 三明治 -->
+                <div onclick="selectDish('sandwich')" class="hover-lift bg-white border-2 border-emerald-200 hover:border-brand-orange rounded-2xl p-5 cursor-pointer shadow-sm transition duration-200 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-5xl bg-emerald-50 p-3 rounded-2xl">🥪</div>
+                        <div>
+                            <span class="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">元氣早餐</span>
+                            <h4 class="text-xl font-black text-slate-800">活力三明治</h4>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed">蓬鬆吐司夾著翠綠小黃瓜、火腿與滑嫩煎蛋，對切成精緻三角形，美味又營養。</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#五顏六色</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#烤吐司麥香</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#鬆軟爽脆</span>
+                    </div>
+                    <button class="w-full bg-brand-navy hover:bg-blue-800 text-white font-bold py-2 rounded-xl text-sm transition">開始寫作訪談 ➔</button>
+                </div>
+
+                <!-- 卡片 3: 壽司 -->
+                <div onclick="selectDish('sushi')" class="hover-lift bg-white border-2 border-rose-200 hover:border-brand-orange rounded-2xl p-5 cursor-pointer shadow-sm transition duration-200 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-5xl bg-rose-50 p-3 rounded-2xl">🍣</div>
+                        <div>
+                            <span class="text-xs font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded">異國風情</span>
+                            <h4 class="text-xl font-black text-slate-800">日式壽司</h4>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed">竹簾上鋪滿酸甜醋飯與海苔，捲入玉子燒與小黃瓜，切開就像繽紛小車輪。</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#黑白分明</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#酸甜醋飯香</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#海苔清脆</span>
+                    </div>
+                    <button class="w-full bg-brand-navy hover:bg-blue-800 text-white font-bold py-2 rounded-xl text-sm transition">開始寫作訪談 ➔</button>
+                </div>
+
+                <!-- 卡片 4: 越南春捲 -->
+                <div onclick="selectDish('springroll')" class="hover-lift bg-white border-2 border-teal-200 hover:border-brand-orange rounded-2xl p-5 cursor-pointer shadow-sm transition duration-200 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-5xl bg-teal-50 p-3 rounded-2xl">🌯</div>
+                        <div>
+                            <span class="text-xs font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded">清爽手作</span>
+                            <h4 class="text-xl font-black text-slate-800">越南春捲</h4>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed">薄如蟬翼的透明米紙，包裹鮮蝦、薄荷與細米粉，沾上檸檬醬汁清爽開胃。</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#晶瑩剔透</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#草本薄荷香</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#外Q內脆</span>
+                    </div>
+                    <button class="w-full bg-brand-navy hover:bg-blue-800 text-white font-bold py-2 rounded-xl text-sm transition">開始寫作訪談 ➔</button>
+                </div>
+
+                <!-- 卡片 5: 異國義大利麵 -->
+                <div onclick="selectDish('pasta')" class="hover-lift bg-white border-2 border-orange-200 hover:border-brand-orange rounded-2xl p-5 cursor-pointer shadow-sm transition duration-200 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-5xl bg-orange-50 p-3 rounded-2xl">🍝</div>
+                        <div>
+                            <span class="text-xs font-bold bg-orange-100 text-orange-800 px-2 py-0.5 rounded">異國料理</span>
+                            <h4 class="text-xl font-black text-slate-800">異國義大利麵</h4>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed">造型可愛的蝴蝶麵、貓耳朵麵，拌入濃郁紅醬、青醬或白醬，撒上起司粉香氣四溢。</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#造型可愛</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#濃郁醬香</span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">#Q彈滑順</span>
+                    </div>
+                    <button class="w-full bg-brand-navy hover:bg-blue-800 text-white font-bold py-2 rounded-xl text-sm transition">開始寫作訪談 ➔</button>
+                </div>
+
+                <!-- 卡片 6: 自訂創意美食 -->
+                <div onclick="openCustomDishModal()" class="hover-lift bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-300 hover:border-brand-orange rounded-2xl p-5 cursor-pointer shadow-sm transition duration-200 flex flex-col justify-between space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="text-5xl bg-purple-100 p-3 rounded-2xl">✨</div>
+                        <div>
+                            <span class="text-xs font-bold bg-purple-200 text-purple-800 px-2 py-0.5 rounded">自由創意</span>
+                            <h4 class="text-xl font-black text-purple-900">自訂創意美食</h4>
+                        </div>
+                    </div>
+                    <p class="text-xs text-purple-700 leading-relaxed">水果優格杯、蔥抓餅、大阪燒或鬆餅？自由輸入你今天做的專屬料理名稱！</p>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="text-[11px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md">#獨一無二</span>
+                        <span class="text-[11px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md">#發揮想像力</span>
+                        <span class="text-[11px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md">#專屬題庫</span>
+                    </div>
+                    <button class="w-full bg-purple-800 hover:bg-purple-900 text-white font-bold py-2 rounded-xl text-sm transition">輸入美食名稱 ➔</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stage 2: 美味訪談室 (Conversational UI) -->
+        <section id="stage2" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- 左側/上方：訪談問答互動區 (2欄) -->
+                <div class="lg:col-span-2 space-y-4">
+                    
+                    <!-- 導師問答卡片 -->
+                    <div class="bg-white rounded-2xl border-2 border-blue-100 shadow-md p-5 space-y-4">
+                        <!-- 步驟進度與導師頭像 -->
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <div class="flex items-center space-x-3">
+                                <span class="text-4xl">🐻‍❄️</span>
+                                <div>
+                                    <span id="currentStepBadge" class="text-xs font-bold bg-brand-orange text-white px-2.5 py-0.5 rounded-full">
+                                        步驟 1 / 5
+                                    </span>
+                                    <h3 id="currentStepTitle" class="text-lg font-black text-brand-navy mt-0.5">製作過程</h3>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-slate-400">寫作感官引導</span>
+                        </div>
+
+                        <!-- 小熊對話氣泡 -->
+                        <div class="bg-brand-sky rounded-2xl p-4 text-brand-navy font-medium text-sm md:text-base leading-relaxed border border-blue-200/60 shadow-inner">
+                            <p id="mentorQuestionText">載入提問中...</p>
+                        </div>
+
+                        <!-- 例句提示展開按鈕與區塊 -->
+                        <div>
+                            <button onclick="toggleExampleHint()" class="text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-300/80 px-3 py-1.5 rounded-lg flex items-center space-x-1 transition">
+                                <span>💡 看這題的示範參考句</span>
+                                <span id="exampleToggleIcon">▼</span>
+                            </button>
+                            <div id="exampleHintBox" class="hidden mt-2 p-3 bg-amber-50/80 border-l-4 border-brand-yellow rounded-r-xl text-xs text-amber-900 leading-relaxed italic">
+                                範例提示載入中...
+                            </div>
+                        </div>
+
+                        <!-- 專屬詞彙百寶箱 (Chips Box) -->
+                        <div class="space-y-2 pt-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-600 flex items-center space-x-1">
+                                    <span>🧰</span>
+                                    <span id="chipBoxTitle">本題專屬詞彙庫（點擊直接帶入回答）</span>
+                                </span>
+                                <span class="text-[10px] text-slate-400">點擊點選詞語</span>
+                            </div>
+                            <div id="vocabularyChips" class="flex flex-wrap gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl max-h-36 overflow-y-auto">
+                                <!-- Chips will be injected dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- 學生回答輸入框 -->
+                        <div class="space-y-2 pt-2">
+                            <label for="studentAnswerInput" class="block text-xs font-bold text-slate-700">
+                                ✍️ 你的回答（請結合專屬語詞，寫出完整的句子）：
+                            </label>
+                            <textarea id="studentAnswerInput" rows="4" class="w-full p-3.5 border-2 border-slate-300 focus:border-brand-navy focus:ring-2 focus:ring-blue-200 rounded-xl text-sm leading-relaxed text-slate-800 placeholder-slate-400 transition" placeholder="請在此輸入或點選上方詞彙組合句子..."></textarea>
+                            <div class="flex justify-between text-[11px] text-slate-400 px-1">
+                                <span>提示：寫得越詳細，後續發酵出來的文章越精采喔！</span>
+                                <span id="charCount">0 字</span>
+                            </div>
+                        </div>
+
+                        <!-- 控制按鈕列 -->
+                        <div class="flex justify-between items-center pt-2">
+                            <button id="prevStepBtn" onclick="prevStep()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-sm transition">
+                                ⬅️ 上一步
+                            </button>
+
+                            <button id="nextStepBtn" onclick="nextStep()" class="bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-md transition flex items-center space-x-1 pulse-subtle">
+                                <span id="nextBtnText">下個感官步驟</span>
+                                <span>➡️</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 右側/下方：實時寫作心智圖進度 (1欄) -->
+                <div class="space-y-4">
+                    <div class="bg-white rounded-2xl border-2 border-slate-200 shadow-md p-4 space-y-3 sticky top-20">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <h4 class="font-black text-brand-navy text-sm flex items-center space-x-1">
+                                <span>🧠</span>
+                                <span>「美味的<span id="mindMapDishName" class="text-brand-orange">手作飯糰</span>」心智圖</span>
+                            </h4>
+                            <span class="text-[11px] text-brand-green font-bold" id="mindMapProgress">進度 1/5</span>
+                        </div>
+
+                        <!-- 心智圖分支清單 -->
+                        <div class="space-y-2.5 text-xs">
+                            <!-- 分支 1 -->
+                            <div id="mindNode0" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 transition">
+                                <div class="font-bold text-slate-600 flex justify-between">
+                                    <span>① 製作過程 (動詞與步驟)</span>
+                                    <span class="node-status text-slate-400">未完成</span>
+                                </div>
+                                <p class="node-content text-slate-500 mt-1 truncate italic">尚未填寫...</p>
+                            </div>
+
+                            <!-- 分支 2 -->
+                            <div id="mindNode1" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 transition">
+                                <div class="font-bold text-slate-600 flex justify-between">
+                                    <span>② 色（視覺描寫）</span>
+                                    <span class="node-status text-slate-400">未完成</span>
+                                </div>
+                                <p class="node-content text-slate-500 mt-1 truncate italic">尚未填寫...</p>
+                            </div>
+
+                            <!-- 分支 3 -->
+                            <div id="mindNode2" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 transition">
+                                <div class="font-bold text-slate-600 flex justify-between">
+                                    <span>③ 香（嗅覺描寫）</span>
+                                    <span class="node-status text-slate-400">未完成</span>
+                                </div>
+                                <p class="node-content text-slate-500 mt-1 truncate italic">尚未填寫...</p>
+                            </div>
+
+                            <!-- 分支 4 -->
+                            <div id="mindNode3" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 transition">
+                                <div class="font-bold text-slate-600 flex justify-between">
+                                    <span>④ 味（味覺與口感）</span>
+                                    <span class="node-status text-slate-400">未完成</span>
+                                </div>
+                                <p class="node-content text-slate-500 mt-1 truncate italic">尚未填寫...</p>
+                            </div>
+
+                            <!-- 分支 5 -->
+                            <div id="mindNode4" class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 transition">
+                                <div class="font-bold text-slate-600 flex justify-between">
+                                    <span>⑤ 心情與收穫</span>
+                                    <span class="node-status text-slate-400">未完成</span>
+                                </div>
+                                <p class="node-content text-slate-500 mt-1 truncate italic">尚未填寫...</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Stage 3: 寫作計畫與佳作生成室 (Drafting & Export) -->
+        <section id="stage3" class="hidden space-y-8">
+            
+            <!-- 標題與成就獎章 -->
+            <div class="bg-gradient-to-r from-amber-500 to-brand-orange text-white rounded-2xl p-6 shadow-lg text-center space-y-2 no-print">
+                <span class="text-4xl">🎉</span>
+                <h2 class="text-2xl md:text-3xl font-black">太棒了！你的美味作文計畫已順利生成！</h2>
+                <p class="text-amber-100 text-sm">小熊導師已將你的感官訪談內容，編排成標準國小四年級記敘文三段式架構，你可以直接在下方微調修飾喔！</p>
+            </div>
+
+            <!-- 六宮格心智圖總覽 Summary Mind Map Grid (列印時可視) -->
+            <div class="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm space-y-3">
+                <h3 class="font-black text-brand-navy text-base flex items-center space-x-2 border-b border-slate-100 pb-2">
+                    <span>🗺️</span>
+                    <span>感官寫作心智圖總覽（全方位架構）</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+                    <div class="bg-amber-50 border border-amber-200 p-3 rounded-xl">
+                        <span class="font-bold text-amber-800 block mb-1">【步驟一】製作過程</span>
+                        <p id="summaryStep0" class="text-slate-700 leading-relaxed"></p>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 p-3 rounded-xl">
+                        <span class="font-bold text-blue-800 block mb-1">【步驟二】視覺 (色)</span>
+                        <p id="summaryStep1" class="text-slate-700 leading-relaxed"></p>
+                    </div>
+                    <div class="bg-orange-50 border border-orange-200 p-3 rounded-xl">
+                        <span class="font-bold text-orange-800 block mb-1">【步驟三】嗅覺 (香)</span>
+                        <p id="summaryStep2" class="text-slate-700 leading-relaxed"></p>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl">
+                        <span class="font-bold text-emerald-800 block mb-1">【步驟四】味覺與口感 (味)</span>
+                        <p id="summaryStep3" class="text-slate-700 leading-relaxed"></p>
+                    </div>
+                    <div class="bg-purple-50 border border-purple-200 p-3 rounded-xl">
+                        <span class="font-bold text-purple-800 block mb-1">【步驟五】心情與收穫</span>
+                        <p id="summaryStep4" class="text-slate-700 leading-relaxed"></p>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-200 p-3 rounded-xl flex flex-col justify-center items-center text-center">
+                        <span class="font-bold text-rose-800 mb-1">文章核心主題</span>
+                        <span id="summaryDishTitle" class="text-sm font-black text-rose-900">美味的手作飯糰</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 三段式作文編輯區 -->
+            <div class="bg-white rounded-2xl border-2 border-brand-navy/20 shadow-md p-5 md:p-6 space-y-6">
+                
+                <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-200 pb-4 gap-3">
+                    <div>
+                        <span class="text-xs font-bold text-brand-orange uppercase tracking-wider">Elementary Essay Draft</span>
+                        <h3 class="text-xl font-black text-brand-navy">作文完成稿與微調區</h3>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <label for="essayTitleInput" class="text-xs font-bold text-slate-600 shrink-0">題目：</label>
+                        <input id="essayTitleInput" type="text" class="border-2 border-slate-300 focus:border-brand-navy rounded-lg px-3 py-1.5 text-sm font-bold text-slate-800 w-full md:w-64" value="美味的手作飯糰">
+                    </div>
+                </div>
+
+                <!-- 第一段 -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-sm text-brand-navy flex items-center space-x-1">
+                            <span class="bg-brand-navy text-white text-xs px-2 py-0.5 rounded">第一段</span>
+                            <span>起因與製作過程（開頭與動詞摹寫）</span>
+                        </h4>
+                        <span class="text-xs text-slate-400">可自由潤飾修改</span>
+                    </div>
+                    <textarea id="paragraph1" rows="4" class="w-full p-4 border border-slate-300 focus:border-brand-navy rounded-xl text-sm leading-relaxed text-slate-800 bg-slate-50/50 focus:bg-white transition"></textarea>
+                </div>
+
+                <!-- 第二段 -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-sm text-brand-navy flex items-center space-x-1">
+                            <span class="bg-brand-navy text-white text-xs px-2 py-0.5 rounded">第二段</span>
+                            <span>美味密碼（色、香、味感官描寫）</span>
+                        </h4>
+                        <span class="text-xs text-slate-400">精彩感官核心</span>
+                    </div>
+                    <textarea id="paragraph2" rows="5" class="w-full p-4 border border-slate-300 focus:border-brand-navy rounded-xl text-sm leading-relaxed text-slate-800 bg-slate-50/50 focus:bg-white transition"></textarea>
+                </div>
+
+                <!-- 第三段 -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-sm text-brand-navy flex items-center space-x-1">
+                            <span class="bg-brand-navy text-white text-xs px-2 py-0.5 rounded">第三段</span>
+                            <span>心情感受與總結收穫（結尾與延伸）</span>
+                        </h4>
+                        <span class="text-xs text-slate-400">心得與分享</span>
+                    </div>
+                    <textarea id="paragraph3" rows="4" class="w-full p-4 border border-slate-300 focus:border-brand-navy rounded-xl text-sm leading-relaxed text-slate-800 bg-slate-50/50 focus:bg-white transition"></textarea>
+                </div>
+
+            </div>
+
+            <!-- 自我檢核表 Check List (互動解鎖慶祝) -->
+            <div class="no-print bg-amber-50 border-2 border-amber-300 rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h4 class="font-black text-amber-900 text-base flex items-center space-x-2">
+                        <span>✅</span>
+                        <span>寫作自我檢核表（點擊勾選確認完成度）</span>
+                    </h4>
+                    <span id="checkProgressText" class="text-xs font-bold bg-amber-200 text-amber-900 px-2.5 py-1 rounded-full">
+                        已完成 0 / 5
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm text-slate-700">
+                    <label class="flex items-center space-x-2.5 p-2.5 bg-white rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-100/50 transition">
+                        <input type="checkbox" onchange="updateChecklist()" class="checklist-item w-4 h-4 text-brand-orange rounded focus:ring-amber-400">
+                        <span>1. 我寫出了製作這道美食的步驟與動作（動詞）。</span>
+                    </label>
+                    <label class="flex items-center space-x-2.5 p-2.5 bg-white rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-100/50 transition">
+                        <input type="checkbox" onchange="updateChecklist()" class="checklist-item w-4 h-4 text-brand-orange rounded focus:ring-amber-400">
+                        <span>2. 我描繪了美食的形狀、顏色與外觀細節（視覺）。</span>
+                    </label>
+                    <label class="flex items-center space-x-2.5 p-2.5 bg-white rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-100/50 transition">
+                        <input type="checkbox" onchange="updateChecklist()" class="checklist-item w-4 h-4 text-brand-orange rounded focus:ring-amber-400">
+                        <span>3. 我寫出了熱騰騰或誘人的食物香氣（嗅覺）。</span>
+                    </label>
+                    <label class="flex items-center space-x-2.5 p-2.5 bg-white rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-100/50 transition">
+                        <input type="checkbox" onchange="updateChecklist()" class="checklist-item w-4 h-4 text-brand-orange rounded focus:ring-amber-400">
+                        <span>4. 我細緻描述了咬下去的滋味與豐富口感（味覺）。</span>
+                    </label>
+                    <label class="flex items-center space-x-2.5 p-2.5 bg-white rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-100/50 transition col-span-1 md:col-span-2">
+                        <input type="checkbox" onchange="updateChecklist()" class="checklist-item w-4 h-4 text-brand-orange rounded focus:ring-amber-400">
+                        <span>5. 我寫出了完成與品嚐料理時的滿滿心情與收穫（心得）。</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- 功能操作按鈕區 (Copy, Read, Print) -->
+            <div class="no-print flex flex-wrap gap-3 justify-center md:justify-end pb-8">
+                <button onclick="copyFullEssay()" class="bg-slate-700 hover:bg-slate-800 text-white font-bold px-5 py-3 rounded-xl text-sm transition flex items-center space-x-2 shadow">
+                    <span>📋</span>
+                    <span>複製完整文章</span>
+                </button>
+                <button onclick="readEssayTTS()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-3 rounded-xl text-sm transition flex items-center space-x-2 shadow">
+                    <span>🔊</span>
+                    <span>語音朗讀作品</span>
+                </button>
+                <button onclick="printWorksheet()" class="bg-brand-orange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition flex items-center space-x-2 shadow-lg pulse-subtle">
+                    <span>🖨️</span>
+                    <span>列印 A4 作文學習單</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 列印專用 A4 排版樣式區 (Print Only) -->
+        <div class="print-only print-container space-y-6">
+            <div class="text-center border-b-2 border-black pb-4">
+                <h1 class="text-2xl font-bold">【美味的一堂課】國語記敘文寫作學習單</h1>
+                <div class="flex justify-between text-sm mt-3">
+                    <span>四年 _____ 班</span>
+                    <span>座號：_____</span>
+                    <span>姓名：_________________</span>
+                    <span>日期：____年__月__日</span>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="text-xl font-bold mb-2">題目：<span id="printTitle"></span></h2>
+                <div class="border border-black p-3 text-xs mb-4">
+                    <p class="font-bold">【感官與步驟筆記總覽】</p>
+                    <p id="printSummary"></p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-sm leading-loose">
+                <div class="border-b border-gray-300 pb-2">
+                    <p class="font-bold mb-1">【第一段：起因與製作過程】</p>
+                    <p id="printP1" class="whitespace-pre-wrap"></p>
+                </div>
+                <div class="border-b border-gray-300 pb-2">
+                    <p class="font-bold mb-1">【第二段：美味密碼（色香味）】</p>
+                    <p id="printP2" class="whitespace-pre-wrap"></p>
+                </div>
+                <div>
+                    <p class="font-bold mb-1">【第三段：心得與收穫】</p>
+                    <p id="printP3" class="whitespace-pre-wrap"></p>
+                </div>
+            </div>
+
+            <div class="mt-8 border-t-2 border-black pt-4">
+                <p class="font-bold text-sm mb-2">老師評語與回饋：</p>
+                <div class="h-24 border border-dashed border-gray-400 rounded p-2"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 自訂美食 Modal 對話框 -->
+    <div id="customDishModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border-2 border-purple-200 animate-fade-in">
+            <div class="flex items-center space-x-3">
+                <span class="text-4xl">✨</span>
+                <div>
+                    <h3 class="text-xl font-black text-purple-900">請輸入你的自訂美食名稱</h3>
+                    <p class="text-xs text-slate-500">例如：水果優格杯、蔥抓餅、大阪燒、草莓鬆餅</p>
+                </div>
+            </div>
+            
+            <input type="text" id="customDishInput" class="w-full p-3 border-2 border-purple-300 focus:border-purple-600 rounded-xl text-base font-bold text-slate-800 placeholder-slate-400" placeholder="寫下食物名稱（如：水果優格杯）">
+            
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeCustomModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm">取消</button>
+                <button onclick="confirmCustomDish()" class="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-sm shadow">確定選用 ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁尾 (非列印區) -->
+    <footer class="no-print bg-slate-100 border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+        <p>美味的一堂課 - 國小四年級記敘文感官寫作互動教學系統</p>
+    </footer>
+
+    <!-- JavaScript 邏輯引擎 -->
+    <script>
+        /* ==========================================================================
+           1. 獨立五大美食資料庫 (DISH_DATA) - 嚴格隔離，絕不混用
+           ========================================================================== */
+        const DISH_DATA = {
+            riceball: {
+                name: "手作飯糰",
+                icon: "🍙",
+                badgeClass: "bg-amber-100 text-amber-800",
+                steps: [
+                    {
+                        title: "步驟 1：製作過程",
+                        question: "太棒了！開始做手作飯糰時，你是怎麼把飯糰包起來的呢？用了哪些動作？",
+                        example: "「我先用飯匙舀起溫熱的白飯鋪在袋子上，接著放上香噴噴的肉鬆與滷蛋，最後用力握壓捏成一個圓滾滾的飯糰。」",
+                        chips: ["用飯匙鬆飯", "鋪在塑膠袋上", "放上肉鬆", "放入半顆滷蛋", "加點酥脆蘿蔔乾", "撒上香甜花生粉", "緊緊握壓", "捏成橢圓形", "轉緊包起來"]
+                    },
+                    {
+                        title: "步驟 2：色（視覺描寫）",
+                        question: "仔細觀察捏好的飯糰，它長什麼樣子？顏色和外形如何形容？",
+                        example: "「我的飯糰白白胖胖的，米粒看起來亮晶晶，裡面包裹著金黃色的肉鬆，就像一顆可愛的小橄欖球。」",
+                        chips: ["白白胖胖", "圓滾滾", "橢圓形", "粒粒分明", "亮晶晶的米粒", "飽滿扎實", "金黃色的肉鬆", "褐色滷蛋"]
+                    },
+                    {
+                        title: "步驟 3：香（嗅覺描寫）",
+                        question: "湊近聞一聞，這個飯糰散發出什麼令人流口水的香味呢？",
+                        example: "「一打開袋子，熱騰騰的米飯香迎面撲來，還夾雜著肉鬆與滷蛋的濃郁香氣，讓人迫不及待想大咬一口。」",
+                        chips: ["熱騰騰的米飯香", "濃郁肉鬆香", "淡淡滷蛋香", "香甜花生粉味", "香氣撲鼻", "令人食指大動", "陣陣香氣"]
+                    },
+                    {
+                        title: "步驟 4：味（味覺與口感）",
+                        question: "一口咬下去！你的嘴巴裡感受到什麼滋味與豐富的口感？",
+                        example: "「咬下一大口，米飯吃起來Q彈有勁，蘿蔔乾脆脆的，鹹鹹甜甜的滋味在嘴裡散開，真的太美味了！」",
+                        chips: ["米飯QQ的", "滷蛋鹹鹹香香", "蘿蔔乾脆脆的", "花生粉甜甜的", "口感層次豐富", "越嚼越香", "口齒留香", "一口接一口"]
+                    },
+                    {
+                        title: "步驟 5：心情與收穫",
+                        question: "完成並品嚐這顆飯糰後，你心裡有什麼感受？最想分享給誰呢？",
+                        example: "「第一次自己捏飯糰很有成就感，看著飽滿的飯糰覺得好滿足，下次我還想做給爸爸媽媽吃！」",
+                        chips: ["很有成就感", "滿滿的幸福感", "覺得自己很厲害", "想做給家人吃", "當個小小料理達人", "心滿意足", "笑嘻嘻"]
+                    }
+                ]
+            },
+            sandwich: {
+                name: "活力三明治",
+                icon: "🥪",
+                badgeClass: "bg-emerald-100 text-emerald-800",
+                steps: [
+                    {
+                        title: "步驟 1：製作過程",
+                        question: "太棒了！製作活力三明治時，你是怎麼一層層堆疊食材的呢？",
+                        example: "「我先在吐司抹上美乃滋，接著鋪上清脆的小黃瓜與火腿，疊上一顆熱騰騰的煎蛋，最後對切成好看的三角形。」",
+                        chips: ["放上一片吐司", "抹上香濃美乃滋", "鋪上清爽小黃瓜", "疊上鮮嫩火腿", "放上香噴噴煎蛋", "蓋上另一片吐司", "沿對角線切開"]
+                    },
+                    {
+                        title: "步驟 2：色（視覺描寫）",
+                        question: "觀察切開後的三明治，它的切面與外型看起來怎麼樣？",
+                        example: "「切開後的三明治層次分明，有粉紅的火腿、綠油油的小黃瓜和金黃的煎蛋，看起來既繽紛又可愛。」",
+                        chips: ["五顏六色", "色彩鮮艷", "綠綠的小黃瓜", "粉紅色的火腿", "金黃色的煎蛋", "可愛的三角形", "一層又一層", "份量十足"]
+                    },
+                    {
+                        title: "步驟 3：香（嗅覺描寫）",
+                        question: "靠近聞一聞這個三明治，陣陣飄來的是什麼香味？",
+                        example: "「微焦的吐司散發著濃濃的奶油與麥香，搭配現煎熱蛋的焦香味，陣陣香氣讓人直流口水。」",
+                        chips: ["烤吐司的麥香味", "剛煎好的蛋香", "奶油的濃郁香氣", "火腿的鹹香", "清爽不油膩", "香味撲鼻"]
+                    },
+                    {
+                        title: "步驟 4：味（味覺與口感）",
+                        question: "大口咬下三明治，麵包與內餡在口中呈現什麼口感與味道？",
+                        example: "「吐司吃起來非常蓬鬆軟綿，夾著清脆爽口的小黃瓜和滑嫩的煎蛋，鹹甜適中，讓人一口接一口停不下來。」",
+                        chips: ["吐司蓬鬆軟綿", "小黃瓜清脆爽口", "煎蛋滑嫩", "火腿鹹香夠味", "美乃滋酸酸甜甜", "一口接一口", "滋味一級棒"]
+                    },
+                    {
+                        title: "步驟 5：心情與收穫",
+                        question: "做完這份滿滿營養的三明治，你心中有什麼體會或感想？",
+                        example: "「親手做三明治比想像中更有趣！吃著充滿活力的早餐，整個人都神清氣爽，覺得自己長大了呢！」",
+                        chips: ["充滿活力", "很有成就感", "發現做早餐很有趣", "吃得安心又健康", "想當個早餐小達人", "露出開心的笑容"]
+                    }
+                ]
+            },
+            sushi: {
+                name: "日式壽司",
+                icon: "🍣",
+                badgeClass: "bg-rose-100 text-rose-800",
+                steps: [
+                    {
+                        title: "步驟 1：製作過程",
+                        question: "哇！要來捲日式壽司囉！請告訴我你捲壽司的步驟與動作。",
+                        example: "「我把海苔鋪在竹簾上，鋪上均勻的醋飯，擺好小黃瓜和蛋條後，用竹簾緊緊捲起來，最後切成一口大小。」",
+                        chips: ["把海苔鋪在竹簾上", "均勻鋪平醋飯", "留下一小段空白", "排入小黃瓜條", "放上煎蛋條與蟹肉棒", "撒點肉鬆", "用竹簾緊緊捲起", "壓實切成小圓圈"]
+                    },
+                    {
+                        title: "步驟 2：色（視覺描寫）",
+                        question: "看看擺在盤子裡的切片壽司，它的模樣與色彩如何形容呢？",
+                        example: "「切好的壽司就像一個個漂亮的小車輪，外層是黑亮的海苔，中間裹著繽紛的內餡，擺在盤子裡非常賞心悅目。」",
+                        chips: ["黑白分明", "色彩繽紛", "像小車輪一樣", "一圈一圈的", "圓圓滾滾", "擺盤精致", "令人賞心悅目"]
+                    },
+                    {
+                        title: "步驟 3：香（嗅覺描寫）",
+                        question: "閉上眼睛聞聞看，壽司散發出什麼樣特別的香氣？",
+                        example: "「一股淡淡的微酸醋飯香伴隨著海苔的海洋氣息飄散開來，清新開胃的香氣讓人心曠神怡。」",
+                        chips: ["酸甜開胃的醋飯香", "海苔的海洋清香", "清爽的蔬菜香", "香甜煎蛋味", "讓人開胃", "清新怡人"]
+                    },
+                    {
+                        title: "步驟 4：味（味覺與口感）",
+                        question: "嚐嚐看你捲的壽司，嚼在嘴裡是什麼感受與滋味？",
+                        example: "「酸甜Q彈的醋飯配上香脆的海苔，內餡的小黃瓜與蛋條口感豐富，吃起來清爽又順口，真是絕配！」",
+                        chips: ["醋飯酸甜軟Q", "海苔香脆", "內餡清爽富有口感", "多層次的美味", "清爽不油膩", "令人回味無窮"]
+                    },
+                    {
+                        title: "步驟 5：心情與收穫",
+                        question: "體驗了做壽司的過程，你覺得自己做得如何？有什麼心情感受？",
+                        example: "「雖然捲壽司需要手藝與耐心，但看到成果覺得自己就像真正的壽司大師一樣，充滿了滿滿的成就感！」",
+                        chips: ["像小廚師一樣厲害", "切壽司非常有成就感", "體驗美食文化", "忍不住豎起大拇指", "好想再做一次"]
+                    }
+                ]
+            },
+            springroll: {
+                name: "越南春捲",
+                icon: "🌯",
+                badgeClass: "bg-teal-100 text-teal-800",
+                steps: [
+                    {
+                        title: "步驟 1：製作過程",
+                        question: "好特別的越南春捲！請問你是如何將透明的春捲皮與食材包起來的？",
+                        example: "「我先把硬硬的米紙泡溫水變軟，再把鮮蝦、米粉和生菜擺中間，兩邊向內折後慢慢捲起來。」",
+                        chips: ["米紙快速沾溫水", "鋪在平盤上變軟", "擺上新鮮生菜", "放上一小把米粉", "疊上鮮蝦與豬肉片", "加幾葉薄荷", "兩側向內折再緊緊捲起"]
+                    },
+                    {
+                        title: "步驟 2：色（視覺描寫）",
+                        question: "仔細看捲好的越南春捲，它的外觀給人什麼感覺？",
+                        example: "「春捲外皮晶瑩剔透，透出裡面鮮紅的大蝦與翠綠的生菜，紅白綠相間的顏色看起來既清涼又精緻。」",
+                        chips: ["晶瑩剔透", "半透明的米紙", "隱約看見鮮紅的大蝦", "紅白綠相間", "清涼消暑的視覺", "造型精緻小巧"]
+                    },
+                    {
+                        title: "步驟 3：香（嗅覺描寫）",
+                        question: "輕輕聞一聞這個春捲，會聞到什麼清爽特有的香氣？",
+                        example: "「近聞能感受到薄荷葉與生菜散發的濃濃草本清香，沾上酸甜的檸檬醬汁後，香味更加誘人。」",
+                        chips: ["薄荷與九層塔清香", "新鮮生菜香", "檸檬魚露醬汁酸辣香", "清爽宜人", "讓人神清氣爽"]
+                    },
+                    {
+                        title: "步驟 4：味（味覺與口感）",
+                        question: "咬一口春捲，薄薄的外皮與豐富餡料在口中交織出什麼風味？",
+                        example: "「軟Q有彈性的外皮裹著爽脆的蔬菜與鮮甜的大蝦，沾上酸甜微辣的醬汁，一口嚼下超級清爽開胃！」",
+                        chips: ["米紙軟Q有彈性", "鮮蝦甜美緊實", "生菜爽脆多汁", "魚露醬汁酸甜開胃", "口感豐富清爽"]
+                    },
+                    {
+                        title: "步驟 5：心情與收穫",
+                        question: "做完並品嚐了異國風味的春捲，你有什麼心得與感想？",
+                        example: "「看著原本硬硬的米紙泡水變軟包成美味春捲，過程真的像魔術一樣神奇，今天這堂課讓我開了大眼界！」",
+                        chips: ["體驗到異國料理的神奇", "覺得皮變軟過程好有趣", "滿意自己的動手能力", "迫不及待分享給朋友", "大開眼界"]
+                    }
+                ]
+            },
+            pasta: {
+                name: "異國義大利麵",
+                icon: "🍝",
+                badgeClass: "bg-orange-100 text-orange-800",
+                steps: [
+                    {
+                        title: "步驟 1：製作過程",
+                        question: "太棒了！烹煮異國義大利麵時，你是怎麼煮麵條並與醬汁拌勻的呢？",
+                        example: "「我先在鍋裡煮開水，將造型可愛的蝴蝶麵下鍋煮軟並不斷攪拌，接著瀝乾水分，倒入香濃的紅醬拌勻，最後撒上起司粉就完成了。」",
+                        chips: ["煮開水", "下麵條", "輕輕攪拌", "撈起瀝乾水分", "倒入醬汁", "均勻拌勻", "放上配料", "撒上起司粉"]
+                    },
+                    {
+                        title: "步驟 2：色（視覺描寫）",
+                        question: "觀察盤子裡的義大利麵，麵條有什麼特別的造型？醬汁呈現什麼顏色？",
+                        example: "「盤子裡有像蝴蝶一樣的蝴蝶麵、彎彎的貓耳朵麵和螺旋麵，裹上鮮紅的番茄紅醬與翠綠的羅勒青醬，看起來五彩繽紛。」",
+                        chips: ["像可愛的蝴蝶麵", "彎彎的貓耳朵麵", "一圈圈的螺旋麵", "鮮紅色的紅醬", "翠綠色的青醬", "乳白色的濃郁白醬", "金黃起司粉", "色彩繽紛"]
+                    },
+                    {
+                        title: "步驟 3：香（嗅覺描寫）",
+                        question: "熱騰騰的義大利麵剛端上桌時，空氣中飄散著什麼誘人的香氣？",
+                        example: "「熱氣往上冒出，濃郁的番茄酸甜香、羅勒葉的清香和起司奶香味混合在一起，香氣撲鼻，讓我忍不住直吞口水。」",
+                        chips: ["濃郁的奶香味", "酸甜番茄醬香", "清新的羅勒青醬香", "鹹香起司粉味", "熱氣騰騰香氣撲鼻", "異國香料氣息", "令人食指大動"]
+                    },
+                    {
+                        title: "步驟 4：味（味覺與口感）",
+                        question: "用叉子捲起或舀起一口義大利麵放進嘴裡，吃起來是什麼口感與滋味？",
+                        example: "「麵條吃起來Q彈有嚼勁，吸飽了酸酸甜甜的紅醬與濃郁起司味，口感滑順又豐富，真是令人念念不忘！」",
+                        chips: ["麵條Q彈有嚼勁", "口感滑順", "紅醬酸酸甜甜", "白醬香濃滑口", "青醬清爽特別", "起司味超濃郁", "一口接一口", "令人念念不忘"]
+                    },
+                    {
+                        title: "步驟 5：心情與收穫",
+                        question: "認識並親手完成這道異國義大利麵後，你心裡有什麼特別的感受與收穫？",
+                        example: "「沒想到義大利麵有這麼多有趣的造型，自己動手煮麵條拌醬汁既好玩又很有成就感，今天真是令人大開眼界的一堂課！」",
+                        chips: ["令人大開眼界", "認識多變的義大利麵造型", "自己煮麵超有成就感", "像義大利大廚一樣厲害", "念念不忘的美味", "想煮給家人品嚐"]
+                    }
+                ]
+            },
+            custom: {
+                name: "自訂創意美食",
+                icon: "✨",
+                badgeClass: "bg-purple-100 text-purple-800",
+                steps: [
+                    {
+                        title: "步驟 1：製作過程",
+                        question: "太酷了！製作你的『{DISH}』時，你進行了哪些備料與組合的步驟呢？",
+                        example: "「我先細心地將新鮮食材洗淨備齊，接著按照步驟依序擺放組合，最後擺盤完成我的創意美食。」",
+                        chips: ["準備好新鮮食材", "細心清洗與處理備料", "依序加入各種配料", "用心攪拌與組合", "精緻擺盤裝飾", "完美製作完成"]
+                    },
+                    {
+                        title: "步驟 2：色（視覺描寫）",
+                        question: "看看這道完成的『{DISH}』，外觀看起來怎麼樣？有哪些顏色和外形特色？",
+                        example: "「這道美食顏色搭配得很豐富，五彩繽紛的色彩擺在盤子裡非常吸引人，令人食指大動。」",
+                        chips: ["色澤金黃明亮", "五彩繽紛", "造型獨特吸睛", "份量十足", "看起來非常精緻", "令人食指大動"]
+                    },
+                    {
+                        title: "步驟 3：香（嗅覺描寫）",
+                        question: "聞聞看這道獨一無二的料理，散發出什麼迷人的香味呢？",
+                        example: "「剛做好的料理傳來陣陣濃郁撲鼻的香氣，迷人的香味環繞在空氣中，讓人直吞口水。」",
+                        chips: ["香氣四溢", "陣陣撲鼻而來", "濃郁迷人的香味", "誘人的食材甜香", "讓人直吞口水"]
+                    },
+                    {
+                        title: "步驟 4：味（味覺與口感）",
+                        question: "嚐一口自己精心製作的料理，嘴巴裡是什麼口感與滋味？",
+                        example: "「咬下一口，豐富的口感在舌尖化開，鹹甜適中的味道搭配得剛剛好，真的美味極了！」",
+                        chips: ["外酥內嫩", "酸甜適中", "鹹香夠味", "口感層次豐富", "美味極了", "越吃越順口"]
+                    },
+                    {
+                        title: "步驟 5：心情與收穫",
+                        question: "完成這道自創的美食，你心情如何？這次手作帶給你什麼驚喜與收穫？",
+                        example: "「親手創作出這麼好吃的料理讓我非常有成就感，不僅學到了烹飪技巧，更享受到了動手做的無窮樂趣！」",
+                        chips: ["充滿驚喜與成就感", "享受創意的樂趣", "覺得自己是神廚", "迫不及待想給家人品嚐", "留下了美好的回憶"]
+                    }
+                ]
+            }
+        };
+
+        /* ==========================================================================
+           2. 全域狀態變數 (State)
+           ========================================================================== */
+        let currentStage = 1;
+        let selectedDishKey = 'riceball';
+        let customDishName = '水果優格杯';
+        let currentStepIndex = 0; // 0..4
+        let userAnswers = ["", "", "", "", ""];
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        /* ==========================================================================
+           3. Web Audio 音效產生器 (無外部音檔依賴)
+           ========================================================================== */
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'chip') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(880, now + 0.04);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                }
+            } catch (e) {
+                console.log("Audio play failed:", e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggleBtn');
+            btn.innerHTML = soundEnabled ? '🔊' : '🔇';
+            if (soundEnabled) playSound('click');
+        }
+
+        /* ==========================================================================
+           4. 頁面階段切換與初始化
+           ========================================================================== */
+        function goToStage(stageNum) {
+            playSound('click');
+            currentStage = stageNum;
+
+            document.getElementById('stage1').classList.add('hidden');
+            document.getElementById('stage2').classList.add('hidden');
+            document.getElementById('stage3').classList.add('hidden');
+
+            const badge = document.getElementById('selectedDishBadge');
+            const changeBtn = document.getElementById('changeDishBtn');
+
+            // 更新步驟指示燈
+            document.getElementById('stepDot1').className = "flex items-center space-x-1 " + (stageNum >= 1 ? "text-brand-orange font-bold" : "text-slate-400");
+            document.getElementById('stepDot2').className = "flex items-center space-x-1 " + (stageNum >= 2 ? "text-brand-orange font-bold" : "text-slate-400");
+            document.getElementById('stepDot3').className = "flex items-center space-x-1 " + (stageNum >= 3 ? "text-brand-orange font-bold" : "text-slate-400");
+            
+            document.getElementById('stepNum2').className = "w-6 h-6 rounded-full flex items-center justify-center text-xs " + (stageNum >= 2 ? "bg-brand-orange text-white" : "bg-slate-300 text-white");
+            document.getElementById('stepNum3').className = "w-6 h-6 rounded-full flex items-center justify-center text-xs " + (stageNum >= 3 ? "bg-brand-orange text-white" : "bg-slate-300 text-white");
+
+            if (stageNum === 1) {
+                document.getElementById('stage1').classList.remove('hidden');
+                badge.classList.add('hidden');
+                changeBtn.classList.add('hidden');
+            } else if (stageNum === 2) {
+                document.getElementById('stage2').classList.remove('hidden');
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                changeBtn.classList.remove('hidden');
+                loadStepUI(currentStepIndex);
+            } else if (stageNum === 3) {
+                document.getElementById('stage3').classList.remove('hidden');
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                changeBtn.classList.remove('hidden');
+                generateEssayStudio();
+                playSound('success');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ==========================================================================
+           5. 選擇美食與自訂美食 Modal
+           ========================================================================== */
+        function selectDish(dishKey) {
+            selectedDishKey = dishKey;
+            userAnswers = ["", "", "", "", ""]; // 重置回答
+            currentStepIndex = 0;
+
+            const dish = DISH_DATA[dishKey];
+            let activeName = dish.name;
+            if (dishKey === 'custom') {
+                activeName = customDishName || "自訂美食";
+            }
+
+            // 更新 Badge
+            document.getElementById('badgeIcon').innerText = dish.icon;
+            document.getElementById('badgeName').innerText = activeName;
+            document.getElementById('mindMapDishName').innerText = activeName;
+
+            goToStage(2);
+        }
+
+        function openCustomDishModal() {
+            playSound('click');
+            document.getElementById('customDishModal').classList.remove('hidden');
+            document.getElementById('customDishInput').focus();
+        }
+
+        function closeCustomModal() {
+            playSound('click');
+            document.getElementById('customDishModal').classList.add('hidden');
+        }
+
+        function confirmCustomDish() {
+            const inputVal = document.getElementById('customDishInput').value.trim();
+            if (inputVal) {
+                customDishName = inputVal;
+            } else {
+                customDishName = "美味特餐";
+            }
+            closeCustomModal();
+            selectDish('custom');
+        }
+
+        /* ==========================================================================
+           6. Stage 2: 載入感官步驟 UI 與專屬語詞庫
+           ========================================================================== */
+        function getActiveDishName() {
+            if (selectedDishKey === 'custom') return customDishName || "自訂美食";
+            return DISH_DATA[selectedDishKey].name;
+        }
+
+        function loadStepUI(index) {
+            currentStepIndex = index;
+            const dish = DISH_DATA[selectedDishKey];
+            const stepData = dish.steps[index];
+            const dishName = getActiveDishName();
+
+            // 更新標題與進度
+            document.getElementById('currentStepBadge').innerText = `步驟 ${index + 1} / 5`;
+            document.getElementById('currentStepTitle').innerText = stepData.title;
+
+            // 替代提問文字中的 {DISH} 變數
+            let qText = stepData.question.replace(/{DISH}/g, dishName);
+            document.getElementById('mentorQuestionText').innerText = qText;
+
+            // 範例解答
+            let exText = stepData.example.replace(/{DISH}/g, dishName);
+            document.getElementById('exampleHintBox').innerText = exText;
+            document.getElementById('exampleHintBox').classList.add('hidden');
+            document.getElementById('exampleToggleIcon').innerText = "▼";
+
+            // 載入專屬語詞 Chips
+            const chipsContainer = document.getElementById('vocabularyChips');
+            chipsContainer.innerHTML = '';
+            stepData.chips.forEach(chip => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white hover:bg-brand-orange hover:text-white text-slate-700 border border-slate-300 font-medium text-xs px-3 py-1.5 rounded-lg shadow-sm transition transform active:scale-95 flex items-center space-x-1";
+                btn.innerHTML = `<span>+</span> <span>${chip}</span>`;
+                btn.onclick = () => insertChipText(chip);
+                chipsContainer.appendChild(btn);
+            });
+
+            // 載入先前的回答
+            const inputEl = document.getElementById('studentAnswerInput');
+            inputEl.value = userAnswers[index] || '';
+            updateCharCount();
+
+            // 按鈕狀態
+            const prevBtn = document.getElementById('prevStepBtn');
+            const nextBtnText = document.getElementById('nextBtnText');
+            
+            if (index === 0) {
+                prevBtn.classList.add('opacity-50', 'pointer-events-none');
+            } else {
+                prevBtn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+
+            if (index === 4) {
+                nextBtnText.innerText = "生成作文佳作計畫 ✨";
+            } else {
+                nextBtnText.innerText = "下個感官步驟";
+            }
+
+            // 更新右側心智圖進度
+            updateMindMapUI();
+        }
+
+        function toggleExampleHint() {
+            playSound('click');
+            const box = document.getElementById('exampleHintBox');
+            const icon = document.getElementById('exampleToggleIcon');
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                icon.innerText = "▲";
+            } else {
+                box.classList.add('hidden');
+                icon.innerText = "▼";
+            }
+        }
+
+        function insertChipText(chipText) {
+            playSound('chip');
+            const input = document.getElementById('studentAnswerInput');
+            let curVal = input.value.trim();
+            if (curVal.length > 0) {
+                // 如果已有文字，用逗號加空格連接
+                if (!curVal.endsWith('，') && !curVal.endsWith('。') && !curVal.endsWith('！')) {
+                    curVal += '，';
+                }
+                input.value = curVal + chipText;
+            } else {
+                input.value = chipText;
+            }
+            updateCharCount();
+            input.focus();
+        }
+
+        function updateCharCount() {
+            const val = document.getElementById('studentAnswerInput').value;
+            document.getElementById('charCount').innerText = `${val.length} 字`;
+        }
+
+        document.getElementById('studentAnswerInput').addEventListener('input', updateCharCount);
+
+        function saveCurrentAnswer() {
+            const val = document.getElementById('studentAnswerInput').value.trim();
+            userAnswers[currentStepIndex] = val;
+            updateMindMapUI();
+        }
+
+        function nextStep() {
+            saveCurrentAnswer();
+            if (userAnswers[currentStepIndex] === '') {
+                // 如果留白，自動用預設專屬第一詞補充
+                const defaultChip = DISH_DATA[selectedDishKey].steps[currentStepIndex].chips[0];
+                userAnswers[currentStepIndex] = defaultChip;
+            }
+
+            if (currentStepIndex < 4) {
+                playSound('click');
+                currentStepIndex++;
+                loadStepUI(currentStepIndex);
+            } else {
+                // 完成全部步驟，前往 Stage 3
+                goToStage(3);
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                saveCurrentAnswer();
+                playSound('click');
+                currentStepIndex--;
+                loadStepUI(currentStepIndex);
+            }
+        }
+
+        function updateMindMapUI() {
+            let completedCount = 0;
+            for (let i = 0; i < 5; i++) {
+                const node = document.getElementById(`mindNode${i}`);
+                const statusSpan = node.querySelector('.node-status');
+                const contentP = node.querySelector('.node-content');
+                const ans = userAnswers[i];
+
+                if (ans && ans.length > 0) {
+                    completedCount++;
+                    node.className = "p-2.5 rounded-xl border-2 border-brand-green/40 bg-emerald-50/70 transition shadow-sm";
+                    statusSpan.className = "node-status text-brand-green font-bold";
+                    statusSpan.innerText = "✓ 已完成";
+                    contentP.className = "node-content text-slate-700 mt-1 truncate font-medium";
+                    contentP.innerText = ans;
+                } else {
+                    node.className = "p-2.5 rounded-xl border border-slate-200 bg-slate-50 transition opacity-80";
+                    statusSpan.className = "node-status text-slate-400";
+                    statusSpan.innerText = "未完成";
+                    contentP.className = "node-content text-slate-400 mt-1 truncate italic";
+                    contentP.innerText = "尚未填寫...";
+                }
+            }
+            document.getElementById('mindMapProgress').innerText = `進度 ${completedCount}/5`;
+        }
+
+        /* ==========================================================================
+           7. Stage 3: 作文三段式架構自動生成與邏輯組合
+           ========================================================================== */
+        function generateEssayStudio() {
+            const dishName = getActiveDishName();
+            const a0 = userAnswers[0] || "準備好新鮮食材，依序動手製作。";
+            const a1 = userAnswers[1] || "色澤飽滿吸引人。";
+            const a2 = userAnswers[2] || "散發陣陣誘人香氣。";
+            const a3 = userAnswers[3] || "口感豐富美味。";
+            const a4 = userAnswers[4] || "這次手作非常有成就感。";
+
+            // 填入六宮格總覽
+            document.getElementById('summaryStep0').innerText = a0;
+            document.getElementById('summaryStep1').innerText = a1;
+            document.getElementById('summaryStep2').innerText = a2;
+            document.getElementById('summaryStep3').innerText = a3;
+            document.getElementById('summaryStep4').innerText = a4;
+            document.getElementById('summaryDishTitle').innerText = `美味的${dishName}`;
+
+            // 設定題目
+            const defaultTitle = `美味的《${dishName}》記敘文`;
+            document.getElementById('essayTitleInput').value = defaultTitle;
+
+            // 第一段：起因與製作過程 (引言 + 步驟動詞)
+            const p1Text = `    今天國語課上，老師帶領我們進行了一堂特別又趣味十足的寫作體驗課。這次我們要親手製作的美食是「${dishName}」。在製作過程中，我${a0}。看著食材在我手中一步步組合變化，我的心裡充滿了好奇與期待。`;
+            document.getElementById('paragraph1').value = p1Text;
+
+            // 第二段：美味密碼 (色、香、味感官交織)
+            const p2Text = `    大功告成後，我端詳著眼前的佳餚，發現這道${dishName}${a1}。輕輕湊近聞一聞，${a2}。我忍不住張大嘴巴咬上一大口，頓時，${a3}。視覺、嗅覺與味覺的多重享受在嘴裡交織，簡直是世界上最迷人的美味。`;
+            document.getElementById('paragraph2').value = p2Text;
+
+            // 第三段：心情感受與收穫 (總結 + 延伸)
+            const p3Text = `    品嚐著自己親手做的「${dishName}」，我心中覺得${a4}。這堂美味的寫作課不僅滿足了我的味蕾，更讓我體會到動手做料理的無窮樂趣與成就感。下次如果有機會，我還想做給最愛的家人分享！`;
+            document.getElementById('paragraph3').value = p3Text;
+
+            // 重置檢核表
+            const checkboxes = document.querySelectorAll('.checklist-item');
+            checkboxes.forEach(cb => cb.checked = false);
+            updateChecklist();
+        }
+
+        /* ==========================================================================
+           8. 自我檢核表與彩帶動畫
+           ========================================================================== */
+        function updateChecklist() {
+            const checkboxes = document.querySelectorAll('.checklist-item');
+            let checkedCount = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked) checkedCount++;
+            });
+
+            const textEl = document.getElementById('checkProgressText');
+            textEl.innerText = `已完成 ${checkedCount} / 5`;
+
+            if (checkedCount === 5) {
+                textEl.className = "text-xs font-bold bg-brand-green text-white px-2.5 py-1 rounded-full animate-bounce";
+                playSound('success');
+                // 觸發彩帶動畫
+                if (typeof confetti === 'function') {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                }
+            } else {
+                textEl.className = "text-xs font-bold bg-amber-200 text-amber-900 px-2.5 py-1 rounded-full";
+            }
+        }
+
+        /* ==========================================================================
+           9. 複製、語音朗讀 (Web Speech API) 與 A4 列印
+           ========================================================================== */
+        function copyFullEssay() {
+            playSound('click');
+            const title = document.getElementById('essayTitleInput').value;
+            const p1 = document.getElementById('paragraph1').value;
+            const p2 = document.getElementById('paragraph2').value;
+            const p3 = document.getElementById('paragraph3').value;
+
+            const fullText = `${title}\n\n${p1}\n\n${p2}\n\n${p3}`;
+
+            // 使用傳統 execCommand 確保在各種 iframe 環境相容
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = fullText;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            alert("🎉 文章已成功複製到剪貼簿！可以貼到 Word 或線上繳交作業區囉！");
+        }
+
+        function readEssayTTS() {
+            playSound('click');
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // 停止先前的朗讀
+
+                const title = document.getElementById('essayTitleInput').value;
+                const p1 = document.getElementById('paragraph1').value;
+                const p2 = document.getElementById('paragraph2').value;
+                const p3 = document.getElementById('paragraph3').value;
+
+                const textToRead = `${title}。 ${p1} ${p2} ${p3}`;
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                utterance.lang = 'zh-TW';
+                utterance.rate = 0.9; // 稍慢適合國小學生聆聽
+
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("抱歉，您的瀏覽器不支援語音朗讀功能。");
+            }
+        }
+
+        function printWorksheet() {
+            playSound('click');
+            // 同步列印區內容
+            const dishName = getActiveDishName();
+            document.getElementById('printTitle').innerText = document.getElementById('essayTitleInput').value;
+            document.getElementById('printSummary').innerText = `料理名稱：${dishName} | 感官紀錄：過程(動詞)、視覺(色)、嗅覺(香)、味覺(味)、心得。`;
+            document.getElementById('printP1').innerText = document.getElementById('paragraph1').value;
+            document.getElementById('printP2').innerText = document.getElementById('paragraph2').value;
+            document.getElementById('printP3').innerText = document.getElementById('paragraph3').value;
+
+            window.print();
+        }
+
+        /* 頁面載入完成初試化 */
+        window.onload = function() {
+            // 初始化 Stage 1
+            goToStage(1);
+        };
+    </script>
+</body>
+</html>
